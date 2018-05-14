@@ -84,4 +84,4 @@ fabric.properties
 # NO_GIT files
 *NO_GIT.*
 # no resulting data files
-data/*
+init_data/*

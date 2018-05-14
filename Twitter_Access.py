@@ -17,7 +17,8 @@ def get_access_tokens():
     return keys
 
 
-def get_twitter_api_obj(keys):
+def get_twitter_api_obj():
+    keys = get_access_tokens()
     # Creating the authentication object
     auth = tweepy.OAuthHandler(keys['consumer_key'], keys['consumer_secret'])
     # Setting your access token and secret
@@ -44,7 +45,7 @@ def my_home_timeline(api):
     print_tweets(public_tweets)
 
 
-def users_timeline(api, id, tweets_to_pull=5):
+def get_users_timeline(api, id):
     # Get tweets from a users timeline.
 
     tweets = []
@@ -103,7 +104,7 @@ def write_tweet(t, out, fields):
 def get_tweet_csv_writer(id):
     fields = ['id', 'user.screen_name', 'in_reply_to_screen_name', 'created_at', 'favorite_count', 'favorited',\
               'retweet_count', 'retweeted', 'truncated', 'lang', 'text']
-    return (get_csv_writer('data/tweets' + id + '.csv', fields), fields)
+    return (get_csv_writer('init_data/tweets' + id + '.csv', fields), fields)
 
 def get_csv_writer(filename, fields):
     w = csv.DictWriter(open(filename, "w"), fields)
@@ -122,7 +123,7 @@ def get_followers(api, id):
     fields=['screen_name','followers_count', 'following', 'created_at', 'location', 'default_profile', 'default_profile_image',\
             'description', 'favourites_count', 'friends_count', 'geo_enabled', 'has_extended_profile', 'lang', 'name',\
             'profile_use_backgroud_image', 'statuses_count']
-    out = get_csv_writer('data/followersOf' + id + '.csv', fields)
+    out = get_csv_writer('init_data/followersOf' + id + '.csv', fields)
     # Calling the paginated followers function with provided parameters
     for followers in limit_handled(tweepy.Cursor(api.followers, id=id).pages()):
         # Calling the followers function with provided parameters
@@ -154,8 +155,8 @@ def get_followers(api, id):
 
 
 
-api = get_twitter_api_obj(get_access_tokens())
+#api = get_twitter_api_obj()
 # my_home_timeline(api)
-users_timeline(api, "GOP", 200)
+#get_users_timeline(api, "GOP")
 # search_tweets(api, "GOP")
 #get_followers(api, 'GOP')
