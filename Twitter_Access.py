@@ -1,4 +1,5 @@
 # exploring twitter's API reference https://chatbotslife.com/twitter-data-mining-a-guide-to-big-data-analytics-using-python-4efc8ccfa219
+# https://gist.github.com/yanofsky/5436496
 import tweepy       #http://docs.tweepy.org/en/v3.5.0/api.html
 import csv
 import time
@@ -22,34 +23,89 @@ def get_twitter_api_obj(keys):
     # Setting your access token and secret
     auth.set_access_token(keys['access_token'], keys['access_token_secret'])
     # Creating the API object while passing in auth information
-    api = tweepy.API(auth)
+    api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
     return api
 
 def print_tweets(public_tweets):
-    # foreach through all tweets pulled
+    # Print out each tweet in a list of tweets.
     for tweet in public_tweets:
-        # printing the text stored inside the tweet object
-        print('At: {} : {}'.format(tweet.created_at, tweet.text))
-        print('   tweeted by : {} from {}'.format(tweet.user.screen_name, tweet.user.location))
+        print_tweet(tweet)
+
+
+def print_tweet(tweet):
+    # Printing a summary of a tweet object
+    print('At: {} : {}'.format(tweet.created_at, tweet.text))
+    print('   tweeted by : {} from {}'.format(tweet.user.screen_name, tweet.user.location))
 
 
 def my_home_timeline(api):
-    # Using the API object to get tweets from your timeline, and storing it in a variable called public_tweets
+    # Get tweets from my timeline.
     public_tweets = api.home_timeline()
     print_tweets(public_tweets)
 
 
 def users_timeline(api, id, tweets_to_pull=5):
-    # Calling the user_timeline function with our parameters
-    results = api.user_timeline(id=id, count=tweets_to_pull)
-    print_tweets(results)
+    # Get tweets from a users timeline.
+
+    tweets = []
+    # get first 200 tweets (200 is max number allowed in one get)
+    tweets.extend(api.user_timeline(screen_name=id, count=200))
+    # set max_id to id of last retreved tweet
+    max_id = tweets[-1].id - 1
+
+    MAX_TIMELINE_PAGES = 16
+    cursor = tweepy.Cursor(api.user_timeline, id=id, count=200, max_id=max_id).pages(MAX_TIMELINE_PAGES)
+    i=1
+    for page in cursor:
+        print('Obtained ' + str(i) + ' tweet pages for user ' + str(id) + '.')
+        i += 1
+        for tweet in page:
+            if not hasattr(tweet, 'retweeted_status'):      # I believe this attr is now the retweeted bool
+                tweets.append(tweet)
+        max_id = page[-1].id - 1
+
+    #writing data to csv
+    out, fields = get_tweet_csv_writer('Timeline'+ id)
+    for t in tweets:
+        if t.lang != 'en':  # skipping tweets not in english
+            continue
+        write_tweet(t, out, fields)
+        #print_tweet(t)
+
 
 def search_tweets(api, query, language="en"):
-    # Calling the search function with our parameters
+    # Calling the search function
+    out, fields = get_tweet_csv_writer('search' + query)
     results = api.search(q=query, lang=language)
-    print_tweets(results)
+    for t in results:
+        if t.lang != 'en':  # skipping tweets not in english
+            continue
+        write_tweet(t, out, fields)
+        print_tweet(t)
 
-def getcsvwriter(filename, fields):
+def write_tweet(t, out, fields):
+    row = {
+        fields[0]: t.id,
+        fields[1]: t.user.screen_name,
+        fields[2]: t.in_reply_to_screen_name,
+        fields[3]: str(t.created_at),
+        fields[4]: t.favorite_count,
+        fields[5]: t.favorited,
+        fields[6]: t.retweet_count,
+        fields[7]: t.retweeted,
+        fields[8]: t.truncated,
+        fields[9]: t.lang,
+        fields[10]: t.text
+    }
+    out.writerow(row)
+
+
+def get_tweet_csv_writer(id):
+    fields = ['id', 'user.screen_name', 'in_reply_to_screen_name', 'created_at', 'favorite_count', 'favorited',\
+              'retweet_count', 'retweeted', 'truncated', 'lang', 'text']
+    return (get_csv_writer('data/tweets' + id + '.csv', fields), fields)
+
+def get_csv_writer(filename, fields):
     w = csv.DictWriter(open(filename, "w"), fields)
     w.writeheader()
     return w
@@ -66,8 +122,7 @@ def get_followers(api, id):
     fields=['screen_name','followers_count', 'following', 'created_at', 'location', 'default_profile', 'default_profile_image',\
             'description', 'favourites_count', 'friends_count', 'geo_enabled', 'has_extended_profile', 'lang', 'name',\
             'profile_use_backgroud_image', 'statuses_count']
-    out = getcsvwriter('data/followersOf'+id+'.csv', fields)
-    rows= {}
+    out = get_csv_writer('data/followersOf' + id + '.csv', fields)
     # Calling the paginated followers function with provided parameters
     for followers in limit_handled(tweepy.Cursor(api.followers, id=id).pages()):
         # Calling the followers function with provided parameters
@@ -96,8 +151,11 @@ def get_followers(api, id):
             print('SName: {}, has {} followers and {} friends'.format(fol.screen_name, fol.friends_count, fol.following))
             print('    Created in: {}, from {}'.format(str(fol.created_at), fol.location))
 
+
+
+
 api = get_twitter_api_obj(get_access_tokens())
 # my_home_timeline(api)
-# users_timeline(api, "nytimes", 2)
-# search_tweets(api, "Toptal")
-get_followers(api, 'GOP')
+users_timeline(api, "GOP", 200)
+# search_tweets(api, "GOP")
+#get_followers(api, 'GOP')
