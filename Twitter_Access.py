@@ -8,7 +8,7 @@ from datetime import datetime
 def get_access_tokens():
     """Loading App secrets and keys."""
     keys = {}
-    with open("Access_Data_NO_GIT.csv", 'r') as infile:
+    with open('Access_Data_NO_GIT.csv', 'r') as infile:
         reader = csv.DictReader(infile)
         for r in reader:
             for k,v in r.items():
@@ -17,8 +17,9 @@ def get_access_tokens():
     return keys
 
 
-def get_twitter_api_obj():
-    keys = get_access_tokens()
+def get_twitter_api_obj(keys = None):
+    if not keys:
+        keys = get_access_tokens()
     # Creating the authentication object
     auth = tweepy.OAuthHandler(keys['consumer_key'], keys['consumer_secret'])
     # Setting your access token and secret
