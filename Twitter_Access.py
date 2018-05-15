@@ -4,6 +4,7 @@ import tweepy       #http://docs.tweepy.org/en/v3.5.0/api.html
 import csv
 import time
 from datetime import datetime
+from AkTweet import AkTweet
 
 def get_access_tokens():
     """Loading App secrets and keys."""
@@ -51,61 +52,41 @@ def get_users_timeline(api, id):
 
     tweets = []
     # get first 200 tweets (200 is max number allowed in one get)
-    tweets.extend(api.user_timeline(screen_name=id, count=200))
+    tweets.extend(api.user_timeline(screen_name=id, count=200, tweet_mode='extended'))
     # set max_id to id of last retreved tweet
     max_id = tweets[-1].id - 1
 
     MAX_TIMELINE_PAGES = 16
-    cursor = tweepy.Cursor(api.user_timeline, id=id, count=200, max_id=max_id).pages(MAX_TIMELINE_PAGES)
+    cursor = tweepy.Cursor(api.user_timeline, id=id, count=200, max_id=max_id, tweet_mode='extended').pages(MAX_TIMELINE_PAGES)
     i=1
     for page in cursor:
         print('Obtained ' + str(i) + ' tweet pages for user ' + str(id) + '.')
         i += 1
         for tweet in page:
-            if not hasattr(tweet, 'retweeted_status'):      # I believe this attr is now the retweeted bool
-                tweets.append(tweet)
+            tweets.append(tweet)
         max_id = page[-1].id - 1
 
     #writing data to csv
-    out, fields = get_tweet_csv_writer('Timeline'+ id)
+    akt = AkTweet()
+    out = akt.get_tweet_csv_writer('Timeline'+ id)
     for t in tweets:
         if t.lang != 'en':  # skipping tweets not in english
             continue
-        write_tweet(t, out, fields)
+        akt.write_tweet(t, out)
         #print_tweet(t)
 
 
 def search_tweets(api, query, language="en"):
     # Calling the search function
-    out, fields = get_tweet_csv_writer('search' + query)
+    akt = AkTweet()
+    out, fields = akt.get_tweet_csv_writer('search' + query)
     results = api.search(q=query, lang=language)
     for t in results:
         if t.lang != 'en':  # skipping tweets not in english
             continue
-        write_tweet(t, out, fields)
+        akt.write_tweet(t, out)
         print_tweet(t)
 
-def write_tweet(t, out, fields):
-    row = {
-        fields[0]: t.id,
-        fields[1]: t.user.screen_name,
-        fields[2]: t.in_reply_to_screen_name,
-        fields[3]: str(t.created_at),
-        fields[4]: t.favorite_count,
-        fields[5]: t.favorited,
-        fields[6]: t.retweet_count,
-        fields[7]: t.retweeted,
-        fields[8]: t.truncated,
-        fields[9]: t.lang,
-        fields[10]: t.text
-    }
-    out.writerow(row)
-
-
-def get_tweet_csv_writer(id):
-    fields = ['id', 'user.screen_name', 'in_reply_to_screen_name', 'created_at', 'favorite_count', 'favorited',\
-              'retweet_count', 'retweeted', 'truncated', 'lang', 'text']
-    return (get_csv_writer('init_data/tweets' + id + '.csv', fields), fields)
 
 def get_csv_writer(filename, fields):
     w = csv.DictWriter(open(filename, "w"), fields)
