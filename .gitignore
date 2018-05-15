@@ -83,5 +83,9 @@ fabric.properties
 
 # NO_GIT files
 *NO_GIT.*
+
 # no resulting data files
 init_data/*
+
+# no ipython checkpoints
+.ipynb_checkpoints/*
