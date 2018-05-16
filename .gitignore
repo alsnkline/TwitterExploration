@@ -88,4 +88,5 @@ fabric.properties
 init_data/*
 
 # no ipython checkpoints
-.ipynb_checkpoints/*
+**/*.ipynb_checkpoints
+.ipynb_checkpoints/Twitter Exploration-checkpoint.ipynb
