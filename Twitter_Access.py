@@ -115,17 +115,13 @@ def get_users_inner(akuser, user_id, max_pages, verbose=False):
     for i, page in enumerate(cursor):
         print('Obtained {} {} pages for user {}.'.format(str(i+1), akuser.desc, user_id))
         for user in page:
+            akuser.write_user(user, akuser.out)
             users.append(user)
-
-    # writing data to csv
-    print('Writing {} {} for {} to file {}.'.format(len(users), akuser.desc, user_id, akuser.filename))
-    for u in users:
-        akuser.write_user(u, akuser.out)
-        if verbose:
-            print('SName: {}, is following {} accounts and has {} accounts following them'.format(u.screen_name,
-                                                                                              u.friends_count,
-                                                                                              u.followers_count))
-            #print('    Created in: {}, from {}'.format(str(u.created_at), u.location))
+            if verbose:
+                print('SName: {}, is following {} accounts and has {} accounts following them'.format(user.screen_name,
+                                                                                                  user.friends_count,
+                                                                                                  user.followers_count))
+    print('Written {} {} for {} to file {}.'.format(len(users), akuser.desc, user_id, akuser.filename))
 
 
 api = get_twitter_api_obj()
@@ -133,4 +129,4 @@ api = get_twitter_api_obj()
 # get_users_timeline(api, "GOP")
 # get_tweets_from_search(api, "pencil")
 # get_followers(api, 'NRCC')
-get_friends(api, 'ewillis7')
+get_friends(api, 'L_Faulkner_')
