@@ -1,7 +1,6 @@
 """
 Provides an AkUser Class that process a tweepy user object into a csv data file
 """
-import csv
 
 import modules.utils as ut
 
@@ -17,8 +16,8 @@ FIELDS = [
     'followers_count',      # the number of current followers (may be 0 under duress)
     'friends_count',        # the number of users this account is following (may be 0 under duress)
     'listed_count',         # number of public lists this user is a member of.
-    'favourites_count',     # number of Tweets this user has liked in the account's liftime
-    'statuses_count'        # number of Tweets (inc retweets) issued by the user
+    'favourites_count',     # number of Tweets this user has liked in the account's lifetime
+    'statuses_count',       # number of Tweets (inc retweets) issued by the user
     'created_at',           # UTC datetime that the user account was created on twitter
     'utc_offset',           # The offset from GMT/UTC in seconds
     'geo_enabled',          # when true user has enabled geotagging,
@@ -27,7 +26,8 @@ FIELDS = [
     'default_profile',      # When true indicates user has not alterd the theme or background of their profile
     'default_profile_image',# When true indicates user has not uploaded their own profile image
 ]
-FILENAME_ROOT = 'init_data/followersOf'
+FOLLOWER_FILENAME_ROOT = 'init_data/followersOf'
+FRIEND_FILENAME_ROOT = 'init_data/friendsOf'
 
 
 class AkUser(object):
@@ -35,16 +35,21 @@ class AkUser(object):
     # The Twitter API tweet data dictionary for reference:
     # https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/user-object
 
-    def get_user_csv_writer(self, id):
-        """create and return a csv writer for user data"""
-        return ut.get_csv_writer(FILENAME_ROOT + id + '.csv', FIELDS)
+    def get_follower_csv_writer(self, id):
+        """Create and return a csv writer for follower user data for provided user_id."""
+        return ut.get_csv_writer(FOLLOWER_FILENAME_ROOT + id + '.csv', FIELDS)
+
+    def get_friend_csv_writer(self, id):
+        """Create and return a csv writer for friend user data for provided user_id."""
+        return ut.get_csv_writer(FRIEND_FILENAME_ROOT + id + '.csv', FIELDS)
 
     def write_user(self, u, out):
         """write a user to one row of csv out file"""
-        self.__write_row(u, out, ttype='regular')
+        self.__write_row(u, out)
 
 
     def __write_row(self, u, out, **kwargs):
+        """write a user to one row of csv out file"""
         row = {
             FIELDS[0]: u.id_str,
             FIELDS[1]: u.name,

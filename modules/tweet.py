@@ -1,7 +1,6 @@
 """
 Provides an AkTweet Class that process a tweepy tweet object into a csv data file
 """
-import csv
 
 import modules.utils as ut
 
@@ -18,12 +17,14 @@ FIELDS = [
     'lang',                     # indicates a BCP 47 language identifier eg 'en' or 'und' if none detected
     'text',                     # the actual UTF-8 text of the status update
     'from',                     # indicator of type of tweet
+    'tweeted_with'              # id_str of our users tweet for a re-tweet or quoted tweet, None otherwise
 ]
 # Other fields available in raw tweet json not processed and stored in output csv:
 # 'favorited' - bool indicating if this tweet been liked by the authenticating user (ie me) so not useful.
 # 'retweeted' - bool indicating if this tweet been retweeted by the authenticating user (ie me) so not useful.
 # 'reply_count' and 'quote_count' seem not support by the tweepy libarary at this time - possibly issue #946 on github.
-FILENAME_ROOT = 'init_data/tweets'
+TIMELINE_FILENAME_ROOT = 'init_data/tweetsTimeline'
+SEARCH_RESULTS_FILENAME_ROOT = 'init_data/searchFor'
 
 
 class AkTweet(object):
@@ -32,18 +33,23 @@ class AkTweet(object):
     # https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/tweet-object
 
     def get_tweet_csv_writer(self, id):
-        """create and return a csv writer for tweet data"""
-        return ut.get_csv_writer(FILENAME_ROOT + id + '.csv', FIELDS)
+        """Create and return a csv writer for timeline tweet data for the provided user_id"""
+        return ut.get_csv_writer(TIMELINE_FILENAME_ROOT + id + '.csv', FIELDS)
+
+    def get_search_results_tweet_csv_writer(self, id):
+        """Create and return a csv writer for search result tweet data for the provided user_id"""
+        return ut.get_csv_writer(SEARCH_RESULTS_FILENAME_ROOT + id + '.csv', FIELDS)
 
     def write_tweet(self, t, out):
-        """write a tweet to one row of csv out file"""
-        self.__write_row(t, out, ttype='regular')
+        """Write a tweet to the csv out file, tweets in one row, retweeted or quoted tweet takes a second row is needed"""
+        self.__write_row(t, out, ttype='regular', twtd_with='None')
         if hasattr(t, 'retweeted_status'):
-            self.__write_row(t.retweeted_status, out, ttype='from_retweeted_status')
+            self.__write_row(t.retweeted_status, out, ttype='from_retweeted_status', twtd_with=t.id_str)
         if hasattr(t, 'quoted_status'):
-            self.__write_row(t.quoted_status, out, ttype='from_quoted_status')
+            self.__write_row(t.quoted_status, out, ttype='from_quoted_status', twtd_with=t.id_str)
 
     def __write_row(self, t, out, **kwargs):
+        """Write one row of tweet data to .csv"""
         text = t.text if hasattr(t, 'text') else t.full_text
         row = {
             FIELDS[0]: t.id_str,
@@ -58,5 +64,6 @@ class AkTweet(object):
             FIELDS[9]: t.lang,
             FIELDS[10]: text,
             FIELDS[11]: kwargs['ttype'],
+            FIELDS[12]: kwargs['twtd_with'],
         }
         out.writerow(row)
