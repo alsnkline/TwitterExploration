@@ -75,43 +75,6 @@ def get_users_timeline(api, user_id):
         akt.write_tweet(t, out)
         #print_tweet(t)
 
-def get_followers(api, user_id):
-    """Get followers from the provided user_id and save to .csv."""
-    # ~15 pages per rate limit trigger
-    MAX_FOLLOWER_PAGES = 30     # returns 6000 followers with one 15 min wait
-    akt = AkUser()
-    out = akt.get_follower_csv_writer(user_id)
-    get_users_inner(api, api.followers, 'followers', user_id, MAX_FOLLOWER_PAGES, out, False)
-
-def get_friends(api, user_id):
-    """get friends (followed accounts) from provided user_id and save to .csv."""
-
-    MAX_FRIEND_PAGES = 14       # ~14 pages per rate limit trigger
-    akt = AkUser()
-    out = akt.get_friend_csv_writer(user_id)
-    get_users_inner(api, api.friends, 'friends', user_id, MAX_FRIEND_PAGES, out, True)
-
-
-def get_users_inner(api, api_call, desc, user_id, max_pages, out, verbose=False):
-    """Inner method, get users from appropiate api then writing them out to .csv"""
-    users = []
-    cursor = tweepy.Cursor(api_call, id=user_id, count=200,).pages(max_pages)
-    for i, page in enumerate(cursor):
-        print('Obtained {} {} pages for user {}.'.format(str(i+1), desc, user_id))
-        for user in page:
-            users.append(user)
-
-    # writing data to csv
-    print('Writing {} {} for {} to file.'.format(len(users), desc, user_id))
-    akt = AkUser()
-    for u in users:
-        akt.write_user(u, out)
-        if verbose:
-            print('SName: {}, is following {} accounts and has {} accounts following them'.format(u.screen_name,
-                                                                                              u.friends_count,
-                                                                                              u.followers_count))
-            #print('    Created in: {}, from {}'.format(str(u.created_at), u.location))
-
 def get_tweets_from_search(api, query, language="en"):
     """Searching for tweets with provided query and with optional language selection. Saving results to .csv"""
     tweets = []
@@ -130,10 +93,44 @@ def get_tweets_from_search(api, query, language="en"):
     for t in tweets:
         akt.write_tweet(t, out)
 
+def get_followers(api, user_id):
+    """Get followers from the provided user_id and save to .csv."""
+    # ~15 pages per rate limit trigger
+    MAX_FOLLOWER_PAGES = 30     # returns 6000 followers with one 15 min wait assuming a full allocation is available
+    akt = AkUser('Followers', api, user_id)
+    get_users_inner(akt, user_id, MAX_FOLLOWER_PAGES, False)
+
+def get_friends(api, user_id):
+    """get friends (followed accounts) from provided user_id and save to .csv."""
+    # ~14 pages per rate limit trigger
+    MAX_FRIEND_PAGES = 14       # returns up to 2800 friends, usually this is everyone
+    akuser = AkUser('Friends', api, user_id)
+    get_users_inner(akuser, user_id, MAX_FRIEND_PAGES, True)
+
+
+def get_users_inner(akuser, user_id, max_pages, verbose=False):
+    """Inner method, get users from appropiate api then writing them out to .csv"""
+    users = []
+    cursor = tweepy.Cursor(akuser.api_call, id=user_id, count=200,).pages(max_pages)
+    for i, page in enumerate(cursor):
+        print('Obtained {} {} pages for user {}.'.format(str(i+1), akuser.desc, user_id))
+        for user in page:
+            users.append(user)
+
+    # writing data to csv
+    print('Writing {} {} for {} to file {}.'.format(len(users), akuser.desc, user_id, akuser.filename))
+    for u in users:
+        akuser.write_user(u, akuser.out)
+        if verbose:
+            print('SName: {}, is following {} accounts and has {} accounts following them'.format(u.screen_name,
+                                                                                              u.friends_count,
+                                                                                              u.followers_count))
+            #print('    Created in: {}, from {}'.format(str(u.created_at), u.location))
+
 
 api = get_twitter_api_obj()
 # my_home_timeline(api)
 # get_users_timeline(api, "GOP")
 # get_tweets_from_search(api, "pencil")
-get_followers(api, 'DNC')
-# get_friends(api, 'TeufelJpt10')
+# get_followers(api, 'NRCC')
+get_friends(api, 'ewillis7')

@@ -29,19 +29,27 @@ FIELDS = [
 FOLLOWER_FILENAME_ROOT = 'init_data/followersOf'
 FRIEND_FILENAME_ROOT = 'init_data/friendsOf'
 
-
 class AkUser(object):
-    """Provides the AkUser Class that process' a tweepy user object into a csv data file."""
+    """Provides the AkUser Class that process' a tweepy user object into a csv data file.
+    Attributes are:
+        filename: the .csv filename that output will be saved to.
+        desc: a descriptive string used in print statements
+        api_call: the tweepy api call used for retreving user data
+        out: the csv_writer used to output user records to file.
+
+    """
     # The Twitter API tweet data dictionary for reference:
     # https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/user-object
-
-    def get_follower_csv_writer(self, id):
-        """Create and return a csv writer for follower user data for provided user_id."""
-        return ut.get_csv_writer(FOLLOWER_FILENAME_ROOT + id + '.csv', FIELDS)
-
-    def get_friend_csv_writer(self, id):
-        """Create and return a csv writer for friend user data for provided user_id."""
-        return ut.get_csv_writer(FRIEND_FILENAME_ROOT + id + '.csv', FIELDS)
+    def __init__(self, type, api, user_id):
+        if type is 'Friends':
+            self.filename = FRIEND_FILENAME_ROOT + user_id + '.csv'
+            self.desc = 'Friends'
+            self.api_call = api.friends
+        elif type is 'Followers':
+            self.filename = FOLLOWER_FILENAME_ROOT + user_id + '.csv'
+            self.desc = 'Followers'
+            self.api_call = api.followers
+        self.out = ut.get_csv_writer(self.filename, FIELDS)
 
     def write_user(self, u, out):
         """write a user to one row of csv out file"""
