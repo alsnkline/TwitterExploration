@@ -116,9 +116,9 @@ def get_users_inner(akuser, user_id, max_pages, verbose=False):
     print('Written {} {} for {} to file {}.'.format(len(users), akuser.desc, user_id, akuser.filename))
 
 
-current_api = get_twitter_api_obj()
+# current_api = get_twitter_api_obj()
 # my_home_timeline(api)
 # get_users_timeline(api, "GOP")
-get_tweets_from_search(current_api, "pencil")
+# get_tweets_from_search(current_api, "pencil")
 # get_followers(api, 'HouseDemocrats')
 # get_friends(api, 'L_Faulkner_')
