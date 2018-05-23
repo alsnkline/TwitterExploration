@@ -50,8 +50,9 @@ def print_tweet(tweet):
     print('   tweeted by : {} from {}'.format(tweet.user.screen_name, tweet.user.location))
 
 
-def my_home_timeline(api):
+def my_home_timeline(api, string):
     """Get tweets from my timeline."""
+    print('Getting autenticated users timeline, {} not used'.format(string))  # keep api of functions consistent
     public_tweets = api.home_timeline()
     print_tweets(public_tweets)
 
@@ -117,26 +118,21 @@ def get_users_inner(akuser, user_id, max_pages, verbose=False):
 
 
 def main(options):
-    """Executing the required Twitter data collection"""
+    """Executing the required Twitter data collection method"""
     current_api = get_twitter_api_obj()
-
-    if options.twitter_call == 'FND':
-        get_friends(current_api, options.string)
-    elif options.twitter_call == 'FLW':
-        get_followers(current_api, options.string)
-    elif options.twitter_call == 'SCH':
-        get_tweets_from_search(current_api, options.string)
-    elif options.twitter_call == 'TL':
-        get_users_timeline(current_api, options.string)
-    else:
-        print('Getting autenticated users timeline')
-        my_home_timeline(current_api)
+    api_call_lookup = {'FRN': get_friends,
+                       'FLW': get_followers,
+                       'SCH': get_tweets_from_search,
+                       'TL': get_users_timeline,
+                       'HM': my_home_timeline}
+    api_call_lookup[options.twitter_call](current_api, options.string)
 
 
 if __name__ == '__main__':
     """Enabling command line running"""
     import argparse
     from argparse import RawTextHelpFormatter
+
     p = argparse.ArgumentParser(description="Run Twitter data collection tools.", formatter_class=RawTextHelpFormatter)
 
     p.add_argument("twitter_call", help="Which Tweepy API call do you want to use?\n"
