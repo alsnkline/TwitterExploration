@@ -13,7 +13,7 @@ FIELDS = [
     'quote_count',              # approx how many times tweet has been quoted
     'reply_count',              # number of times tweet has been replied too
     'retweet_count',            # number of times tweet has been retweeted
-    'truncated',                # Has tweet been shortened - if full text available in retweeted_status then set to false
+    'truncated',                # Has tweet been shortened - if full text available in retweeted_status then its false
     'lang',                     # indicates a BCP 47 language identifier eg 'en' or 'und' if none detected
     'text',                     # the actual UTF-8 text of the status update
     'from',                     # indicator of type of tweet
@@ -36,17 +36,18 @@ class AkTweet(object):
     """
     # The Twitter API tweet data dictionary for reference:
     # https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/tweet-object
-    def __init__(self, type, str):
-        if type is 'Timeline':
-            self.filename = TIMELINE_FILENAME_ROOT + str + '.csv'
-            self.desc = 'user: '+ str
-        elif type is 'Search':
-            self.filename = SEARCH_RESULTS_FILENAME_ROOT + str + '.csv'
-            self.desc = 'query: ' + str
+    def __init__(self, call_type, string):
+        if call_type is 'Timeline':
+            self.filename = TIMELINE_FILENAME_ROOT + string + '.csv'
+            self.desc = 'user: ' + string
+        elif call_type is 'Search':
+            self.filename = SEARCH_RESULTS_FILENAME_ROOT + string + '.csv'
+            self.desc = 'query: ' + string
         self.out = ut.get_csv_writer(self.filename, FIELDS)
 
     def write_tweet(self, t, out):
-        """Write a tweet to the csv out file, tweets in one row, retweeted or quoted tweet takes a second row is needed"""
+        """Write a tweet to the csv out file,
+        original tweets are in one row, retweeted or quoted tweet are put in a second row."""
         self.__write_row(t, out, ttype='regular', twtd_with='None')
         if hasattr(t, 'retweeted_status'):
             self.__write_row(t.retweeted_status, out, ttype='from_retweeted_status', twtd_with=t.id_str)
@@ -62,8 +63,8 @@ class AkTweet(object):
             FIELDS[2]: t.in_reply_to_screen_name,
             FIELDS[3]: str(t.created_at),
             FIELDS[4]: t.favorite_count,
-            FIELDS[5]: t.quote_count if hasattr(t,'quote_count') else '0',
-            FIELDS[6]: t.reply_count if hasattr(t,'reply_count') else '0',
+            FIELDS[5]: t.quote_count if hasattr(t, 'quote_count') else '0',
+            FIELDS[6]: t.reply_count if hasattr(t, 'reply_count') else '0',
             FIELDS[7]: t.retweet_count,
             FIELDS[8]: t.truncated,
             FIELDS[9]: t.lang,

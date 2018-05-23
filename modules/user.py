@@ -5,12 +5,12 @@ Provides an AkUser Class that process a tweepy user object into a csv data file
 import modules.utils as ut
 
 FIELDS = [
-    'id_str',                # unique ID (signed 64 bit integer, id_str is safer)
-    'name',          # name as user defined it max 20 char
+    'id_str',               # unique ID (signed 64 bit integer, id_str is safer)
+    'name',                 # name as user defined it max 20 char
     'screen_name',          # user who posted this Tweet, screen name
     'location',             # user-defined location - may not be a loc or machine parseable
     'description',          # user defined UTF-8 string description of their account
-    #'derived',             # derived consistent geo-data
+    # 'derived',            # derived consistent geo-data
     'protected',            # when true indicates user has chosen to protect their tweets
     'verified',             # when true indicates user has a verified account
     'followers_count',      # the number of current followers (may be 0 under duress)
@@ -22,12 +22,13 @@ FIELDS = [
     'utc_offset',           # The offset from GMT/UTC in seconds
     'geo_enabled',          # when true user has enabled geotagging,
     'lang',                 # The BCP 47 code for user's self declared language
-    'profile_use_backgroud_image', # when true user wants their uploaded background image to be used
+    'profile_use_backgroud_image',  # when true user wants their uploaded background image to be used
     'default_profile',      # When true indicates user has not alterd the theme or background of their profile
-    'default_profile_image',# When true indicates user has not uploaded their own profile image
+    'default_profile_image',  # When true indicates user has not uploaded their own profile image
 ]
 FOLLOWER_FILENAME_ROOT = 'init_data/followersOf'
 FRIEND_FILENAME_ROOT = 'init_data/friendsOf'
+
 
 class AkUser(object):
     """Provides the AkUser Class that process' a tweepy user object into a csv data file.
@@ -39,12 +40,12 @@ class AkUser(object):
     """
     # The Twitter API tweet data dictionary for reference:
     # https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/user-object
-    def __init__(self, type, api, user_id):
-        if type is 'Friends':
+    def __init__(self, call_type, api, user_id):
+        if call_type is 'Friends':
             self.filename = FRIEND_FILENAME_ROOT + user_id + '.csv'
             self.desc = 'Friends'
             self.api_call = api.friends
-        elif type is 'Followers':
+        elif call_type is 'Followers':
             self.filename = FOLLOWER_FILENAME_ROOT + user_id + '.csv'
             self.desc = 'Followers'
             self.api_call = api.followers
@@ -54,8 +55,7 @@ class AkUser(object):
         """write a user to one row of csv out file"""
         self.__write_row(u, out)
 
-
-    def __write_row(self, u, out, **kwargs):
+    def __write_row(self, u, out):
         """write a user to one row of csv out file"""
         row = {
             FIELDS[0]: u.id_str,
