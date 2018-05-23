@@ -58,7 +58,7 @@ def my_home_timeline(api):
 
 def get_users_timeline(api, user_id):
     """Get tweets from provided user_id's Timeline and save to .csv."""
-    max_pages = 5       # 16 or sometime 17 return max number of tweets
+    max_pages = 16       # 16 or sometime 17 return max number of tweets
     cursor = tweepy.Cursor(api.user_timeline, id=user_id, count=200, tweet_mode='extended').pages(max_pages)
     aktweet = AkTweet('Timeline', user_id)
     get_tweets_inner(aktweet, cursor)
@@ -111,14 +111,38 @@ def get_users_inner(akuser, user_id, max_pages, verbose=False):
             akuser.write_user(user, akuser.out)
             users.append(user)
             if verbose:
-                print('SName: {}, is following {} accounts and has {} accounts ' +
+                print('SName: {}, is following {} accounts and has {} accounts '
                       'following them'.format(user.screen_name, user.friends_count, user.followers_count))
     print('Written {} {} for {} to file {}.'.format(len(users), akuser.desc, user_id, akuser.filename))
 
 
-# current_api = get_twitter_api_obj()
-# my_home_timeline(api)
-# get_users_timeline(api, "GOP")
-# get_tweets_from_search(current_api, "pencil")
-# get_followers(api, 'HouseDemocrats')
-# get_friends(api, 'L_Faulkner_')
+def main(options):
+    """Executing the required Twitter data collection"""
+    current_api = get_twitter_api_obj()
+
+    if options.twitter_call == 'FND':
+        get_friends(current_api, options.string)
+    elif options.twitter_call == 'FLW':
+        get_followers(current_api, options.string)
+    elif options.twitter_call == 'SCH':
+        get_tweets_from_search(current_api, options.string)
+    elif options.twitter_call == 'TL':
+        get_users_timeline(current_api, options.string)
+    else:
+        print('Getting autenticated users timeline')
+        my_home_timeline(current_api)
+
+
+if __name__ == '__main__':
+    """Enabling command line running"""
+    import argparse
+    from argparse import RawTextHelpFormatter
+    p = argparse.ArgumentParser(description="Run Twitter data collection tools.", formatter_class=RawTextHelpFormatter)
+
+    p.add_argument("twitter_call", help="Which Tweepy API call do you want to use?\n"
+                                        "FRN: Friend list,\nFLW: Follower list,\n"
+                                        "SCH: Search Tweets,\n TL: Get timeline,\n HM: Get auth users timeline",
+                   choices=['FND', 'FLW', 'SCH', 'TL', 'HM'], default='FRND')
+    p.add_argument("string", help="User_ID for who to get data for or what query to search for?")
+
+    main(p.parse_args())
