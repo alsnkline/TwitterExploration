@@ -7,7 +7,7 @@ import modules.utils as ut
 FIELDS = [
     'id_str',                   # unique ID (signed 64 bit integer, id_str is safer)
     'user.screen_name',         # user who posted this Tweet, screen name
-    'in_reply_to_screen_name',  # Screen name of orginal tweet's author if its a reply
+    'in_reply_to_screen_name',  # Screen name of original tweet's author if its a reply
     'created_at',               # UTC time when tweet was created
     'favorite_count',           # approx how many times tweet has been liked
     'quote_count',              # approx how many times tweet has been quoted
@@ -28,7 +28,7 @@ SEARCH_RESULTS_FILENAME_ROOT = 'init_data/searchFor'
 
 
 class AkTweet(object):
-    """Provides the AkTweet Class that process' a tweepy tweet object into a csv data file.
+    """Provides the AkTweet Class that process' a Tweepy tweet object into a csv data file.
     Attributes are:
         filename: the .csv filename that output will be saved to.
         desc: a descriptive string used in print statements

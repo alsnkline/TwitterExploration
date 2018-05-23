@@ -57,7 +57,7 @@ def my_home_timeline(api):
 
 
 def get_users_timeline(api, user_id):
-    """Get tweets from provided user_id's timeline and save to .csv."""
+    """Get tweets from provided user_id's Timeline and save to .csv."""
     max_pages = 5       # 16 or sometime 17 return max number of tweets
     cursor = tweepy.Cursor(api.user_timeline, id=user_id, count=200, tweet_mode='extended').pages(max_pages)
     aktweet = AkTweet('Timeline', user_id)
@@ -101,7 +101,7 @@ def get_friends(api, user_id):
 
 
 def get_users_inner(akuser, user_id, max_pages, verbose=False):
-    """Inner method, get users from appropiate api then writing them out to .csv"""
+    """Inner method, get users from appropriate api then writing them out to .csv"""
     users = []
     cursor = tweepy.Cursor(akuser.api_call, id=user_id, count=200,).pages(max_pages)
     for i, page in enumerate(cursor):

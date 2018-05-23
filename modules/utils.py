@@ -1,6 +1,6 @@
 """
 Provides various utils:
-csvwriter for provided filename and fields.
+csv writer for provided filename and fields.
 """
 import csv
 

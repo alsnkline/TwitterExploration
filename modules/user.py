@@ -1,5 +1,5 @@
 """
-Provides an AkUser Class that process a tweepy user object into a csv data file
+Provides an AkUser Class that process a Tweepy user object into a csv data file
 """
 
 import modules.utils as ut
@@ -8,7 +8,7 @@ FIELDS = [
     'id_str',               # unique ID (signed 64 bit integer, id_str is safer)
     'name',                 # name as user defined it max 20 char
     'screen_name',          # user who posted this Tweet, screen name
-    'location',             # user-defined location - may not be a loc or machine parseable
+    'location',             # user-defined location - may not be a loc or machine parsable
     'description',          # user defined UTF-8 string description of their account
     # 'derived',            # derived consistent geo-data
     'protected',            # when true indicates user has chosen to protect their tweets
@@ -20,10 +20,10 @@ FIELDS = [
     'statuses_count',       # number of Tweets (inc retweets) issued by the user
     'created_at',           # UTC datetime that the user account was created on twitter
     'utc_offset',           # The offset from GMT/UTC in seconds
-    'geo_enabled',          # when true user has enabled geotagging,
+    'geo_enabled',          # when true user has enabled Geotagging,
     'lang',                 # The BCP 47 code for user's self declared language
-    'profile_use_backgroud_image',  # when true user wants their uploaded background image to be used
-    'default_profile',      # When true indicates user has not alterd the theme or background of their profile
+    'profile_use_background_image',  # when true user wants their uploaded background image to be used
+    'default_profile',      # When true indicates user has not altered the theme or background of their profile
     'default_profile_image',  # When true indicates user has not uploaded their own profile image
 ]
 FOLLOWER_FILENAME_ROOT = 'init_data/followersOf'
@@ -31,11 +31,11 @@ FRIEND_FILENAME_ROOT = 'init_data/friendsOf'
 
 
 class AkUser(object):
-    """Provides the AkUser Class that process' a tweepy user object into a csv data file.
+    """Provides the AkUser Class that process' a Tweepy user object into a csv data file.
     Attributes are:
         filename: the .csv filename that output will be saved to.
         desc: a descriptive string used in print statements
-        api_call: the tweepy api call used for retreving user data
+        api_call: the Tweepy api call used for retrieving user data
         out: the csv_writer used to output user records to file.
     """
     # The Twitter API tweet data dictionary for reference:
