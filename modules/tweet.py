@@ -28,17 +28,22 @@ SEARCH_RESULTS_FILENAME_ROOT = 'init_data/searchFor'
 
 
 class AkTweet(object):
-    """Provides the AkTweet Class that process' a tweepy tweet object into a csv data file."""
+    """Provides the AkTweet Class that process' a tweepy tweet object into a csv data file.
+    Attributes are:
+        filename: the .csv filename that output will be saved to.
+        desc: a descriptive string used in print statements
+        out: the csv_writer used to output user records to file.
+    """
     # The Twitter API tweet data dictionary for reference:
     # https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/tweet-object
-
-    def get_tweet_csv_writer(self, id):
-        """Create and return a csv writer for timeline tweet data for the provided user_id"""
-        return ut.get_csv_writer(TIMELINE_FILENAME_ROOT + id + '.csv', FIELDS)
-
-    def get_search_results_tweet_csv_writer(self, id):
-        """Create and return a csv writer for search result tweet data for the provided user_id"""
-        return ut.get_csv_writer(SEARCH_RESULTS_FILENAME_ROOT + id + '.csv', FIELDS)
+    def __init__(self, type, str):
+        if type is 'Timeline':
+            self.filename = TIMELINE_FILENAME_ROOT + str + '.csv'
+            self.desc = 'user: '+ str
+        elif type is 'Search':
+            self.filename = SEARCH_RESULTS_FILENAME_ROOT + str + '.csv'
+            self.desc = 'query: ' + str
+        self.out = ut.get_csv_writer(self.filename, FIELDS)
 
     def write_tweet(self, t, out):
         """Write a tweet to the csv out file, tweets in one row, retweeted or quoted tweet takes a second row is needed"""

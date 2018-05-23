@@ -36,7 +36,6 @@ class AkUser(object):
         desc: a descriptive string used in print statements
         api_call: the tweepy api call used for retreving user data
         out: the csv_writer used to output user records to file.
-
     """
     # The Twitter API tweet data dictionary for reference:
     # https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/user-object

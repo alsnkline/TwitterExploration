@@ -51,29 +51,10 @@ def my_home_timeline(api):
 
 def get_users_timeline(api, user_id):
     """Get tweets from provided user_id's timeline and save to .csv."""
-    tweets = []
-    # get first 200 tweets (200 is max number allowed in one get)
-    tweets.extend(api.user_timeline(screen_name=user_id, count=200, tweet_mode='extended'))
-    # set max_id to id of last retreved tweet
-    max_id = tweets[-1].id - 1
-
-    MAX_TIMELINE_PAGES = 16 # apparantly sometime 17
-    cursor = tweepy.Cursor(api.user_timeline, id=user_id, count=200, max_id=max_id, tweet_mode='extended').pages(MAX_TIMELINE_PAGES)
-    for i, page in enumerate(cursor):
-        print('Obtained ' + str(i+1) + ' tweet pages for user ' + str(user_id) + '.')
-        for tweet in page:
-            tweets.append(tweet)
-        max_id = page[-1].id - 1
-
-    #writing data to csv
-    print('Writing {} tweets for {} to file.'.format(len(tweets), user_id))
-    akt = AkTweet()
-    out = akt.get_tweet_csv_writer(user_id)
-    for t in tweets:
-        if t.lang != 'en':  # skipping tweets not in english
-            continue
-        akt.write_tweet(t, out)
-        #print_tweet(t)
+    MAX_TIMELINE_PAGES = 5 # apparantly sometime 17
+    cursor = tweepy.Cursor(api.user_timeline, id=user_id, count=200, tweet_mode='extended').pages(MAX_TIMELINE_PAGES)
+    aktweet = AkTweet('Timeline', user_id)
+    get_tweets_inner(aktweet, cursor)
 
 def get_tweets_from_search(api, query, language="en"):
     """Searching for tweets with provided query and with optional language selection. Saving results to .csv"""
@@ -81,24 +62,24 @@ def get_tweets_from_search(api, query, language="en"):
     # get 500 tweets from 5 pages as we get max 100 tweets per page
     MAX_SEARCH_PAGES = 2
     cursor = tweepy.Cursor(api.search, q=query, lang=language, count=100).pages(MAX_SEARCH_PAGES)
+    aktweet = AkTweet('Search', query)
+    get_tweets_inner(aktweet, cursor)
+
+def get_tweets_inner(aktweet, cursor):
+    tweets = []
     for i, page in enumerate(cursor):
-        print('Obtained ' + str(i+1) + ' tweet pages for search ' + str(query) + '.')
+        print('Obtained ' + str(i+1) + ' tweet pages for ' + aktweet.desc + '.')
         for tweet in page:
             tweets.append(tweet)
-
-    # writing data to csv
-    print('Writing {} tweets for {} to file.'.format(len(tweets), query))
-    akt = AkTweet()
-    out = akt.get_search_results_tweet_csv_writer(query)
-    for t in tweets:
-        akt.write_tweet(t, out)
+            aktweet.write_tweet(tweet, aktweet.out)
+    print('Written {} tweets for {} to file {}.'.format(len(tweets), aktweet.desc, aktweet.filename))
 
 def get_followers(api, user_id):
     """Get followers from the provided user_id and save to .csv."""
     # ~15 pages per rate limit trigger
     MAX_FOLLOWER_PAGES = 30     # returns 6000 followers with one 15 min wait assuming a full allocation is available
-    akt = AkUser('Followers', api, user_id)
-    get_users_inner(akt, user_id, MAX_FOLLOWER_PAGES, False)
+    akuser = AkUser('Followers', api, user_id)
+    get_users_inner(akuser, user_id, MAX_FOLLOWER_PAGES, False)
 
 def get_friends(api, user_id):
     """get friends (followed accounts) from provided user_id and save to .csv."""
@@ -124,9 +105,9 @@ def get_users_inner(akuser, user_id, max_pages, verbose=False):
     print('Written {} {} for {} to file {}.'.format(len(users), akuser.desc, user_id, akuser.filename))
 
 
-api = get_twitter_api_obj()
+# api = get_twitter_api_obj()
 # my_home_timeline(api)
 # get_users_timeline(api, "GOP")
 # get_tweets_from_search(api, "pencil")
-# get_followers(api, 'NRCC')
-get_friends(api, 'L_Faulkner_')
+# get_followers(api, 'HouseDemocrats')
+# get_friends(api, 'L_Faulkner_')
